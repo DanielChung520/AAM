@@ -2,7 +2,7 @@
  * @purpose: 认证 API 服务
  * @author: Daniel Chung
  * @createdAt: 2025-01-14
- * @lastModified: 2025-01-14
+ * @lastModified: 2025-01-15
  */
 import apiClient from './client';
 import { API_ENDPOINTS } from '@/config/api';
@@ -81,6 +81,14 @@ export const authApi = {
         new_password: newPassword,
       }
     );
+    return response.data;
+  },
+
+  /**
+   * 更新当前用户信息
+   */
+  updateCurrentUser: async (updates: { email?: string }): Promise<UserInfo> => {
+    const response = await apiClient.put<UserInfo>(API_ENDPOINTS.auth.me, updates);
     return response.data;
   },
 };

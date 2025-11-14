@@ -20,7 +20,7 @@ from sqlalchemy import (
     JSON,
     Index,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from sqlalchemy.sql import func
 
 from src.models.database import Base
@@ -55,7 +55,9 @@ class Version(Base):
 
     # 关系
     creator = relationship("User", foreign_keys=[created_by])
-    deployments = relationship("DeploymentRecord", back_populates="version_record")
+    # 注意：deployments 关系暂时移除，因为 DeploymentRecord.version 是字符串字段而非外键
+    # 如果需要访问 DeploymentRecord 对象，可以通过查询实现：
+    # deployments = db.query(DeploymentRecord).filter(DeploymentRecord.version == version.version).all()
     configs = relationship("VersionConfig", back_populates="version", cascade="all, delete-orphan")
 
     __table_args__ = (

@@ -84,8 +84,8 @@ class AuthSettings(BaseSettings):
 
     secret_key: str = "your-secret-key-change-in-production"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
-    refresh_token_expire_days: int = 7
+    access_token_expire_minutes: int = 10080  # 7 天 (7 * 24 * 60 = 10080 分钟)
+    refresh_token_expire_days: int = 30  # 30 天
     aam_service_url: str = "http://localhost:8000"  # AAM 服务地址
 
     model_config = SettingsConfigDict(env_prefix="AUTH_", case_sensitive=False)

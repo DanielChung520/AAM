@@ -2,9 +2,9 @@
  * @purpose: 顶部导航栏组件
  * @author: Daniel Chung
  * @createdAt: 2025-01-14
- * @lastModified: 2025-01-14
+ * @lastModified: 2025-01-15
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -21,17 +21,20 @@ import { useColorScheme } from '@mui/joy/styles';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { authApi } from '@/services/api/auth';
+import { ChangePasswordDialog } from '@/components/common/ChangePasswordDialog';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LockIcon from '@mui/icons-material/Lock';
 
 export const TopNavigation: React.FC = () => {
   const navigate = useNavigate();
   const { mode, setMode } = useColorScheme();
   const { toggleMode } = useThemeStore();
   const { user, logout } = useAuthStore();
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -133,6 +136,10 @@ export const TopNavigation: React.FC = () => {
                 </Typography>
               </Box>
             </MenuItem>
+            <MenuItem onClick={() => setChangePasswordOpen(true)}>
+              <LockIcon sx={{ mr: 1 }} />
+              修改密码
+            </MenuItem>
             <MenuItem onClick={() => navigate('/settings')}>
               <SettingsIcon sx={{ mr: 1 }} />
               设置
@@ -144,6 +151,12 @@ export const TopNavigation: React.FC = () => {
           </Menu>
         </Dropdown>
       </Box>
+
+      {/* 修改密码对话框 */}
+      <ChangePasswordDialog
+        open={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
     </Sheet>
   );
 };

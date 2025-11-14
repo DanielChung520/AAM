@@ -22,7 +22,7 @@ from sqlalchemy import (
     Index,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign, remote
 from sqlalchemy.sql import func
 
 Base = declarative_base()
@@ -168,7 +168,9 @@ class DeploymentRecord(Base):
 
     # 关系
     operator_user = relationship("User", back_populates="deployments")
-    # 注意：version 是字符串字段，不是外键，需要通过查询关联 Version 模型
+    # 注意：version_record 关系暂时移除，因为 DeploymentRecord.version 是字符串字段而非外键
+    # 如果需要访问 Version 对象，可以通过查询实现：
+    # version_obj = db.query(Version).filter(Version.version == deployment.version).first()
 
     __table_args__ = (
         Index("idx_deployment_version", "version"),

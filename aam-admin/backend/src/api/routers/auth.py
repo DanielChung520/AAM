@@ -2,7 +2,7 @@
 @purpose: 认证路由，处理登录、登出、Token 刷新等
 @author: Daniel Chung
 @createdAt: 2025-01-14
-@lastModified: 2025-01-14
+@lastModified: 2025-01-15
 """
 
 import hashlib
@@ -75,6 +75,12 @@ class ChangePasswordResponse(BaseModel):
     """修改密码响应"""
 
     message: str
+
+
+class UpdateUserInfoRequest(BaseModel):
+    """更新用户信息请求"""
+
+    email: Optional[EmailStr] = None
 
 
 @router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
@@ -365,3 +371,74 @@ async def change_password(
     logger.info(f"Password changed successfully for user: {user.username}")
 
     return ChangePasswordResponse(message="密码修改成功")
+
+
+@router.put("/me", response_model=UserInfoResponse, status_code=status.HTTP_200_OK)
+async def update_current_user_info(
+    request: UpdateUserInfoRequest,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    db: Session = Depends(get_db),
+    auth_service: AuthService = Depends(lambda: AuthService()),
+):
+    """
+    更新当前用户信息
+
+    Args:
+        request: 更新用户信息请求
+        credentials: HTTP Bearer 凭证
+        db: 数据库会话
+        auth_service: 认证服务
+
+    Returns:
+        UserInfoResponse: 更新后的用户信息
+
+    Raises:
+        HTTPException: 当认证失败或邮箱已存在时
+    """
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="缺少认证令牌",
+        )
+
+    token = credentials.credentials
+    payload = auth_service.verify_token(token, token_type="access")
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无效或过期的令牌",
+        )
+
+    user_id = int(payload.get("sub"))
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在",
+        )
+
+    # 更新邮箱（如果提供）
+    if request.email is not None:
+        # 检查邮箱是否已被其他用户使用
+        existing_user = db.query(User).filter(
+            User.email == request.email, User.id != user_id
+        ).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="该邮箱已被其他用户使用",
+            )
+        user.email = request.email
+
+    db.commit()
+    db.refresh(user)
+
+    logger.info(f"User info updated successfully for user: {user.username}")
+
+    return UserInfoResponse(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        role=user.role.value,
+        is_active=user.is_active,
+    )

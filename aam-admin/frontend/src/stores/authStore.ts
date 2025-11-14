@@ -32,13 +32,25 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       isAuthenticated: false,
-      login: (token, refreshToken, user) =>
+      login: (token, refreshToken, user) => {
+        console.log('🔐 调用 login 函数，参数:', { token: token ? '存在' : '缺失', refreshToken: refreshToken ? '存在' : '缺失', user });
         set({
           token,
-          refreshToken,
-          user,
-          isAuthenticated: true,
-        }),
+          refreshToken: refreshToken || null,
+          user: user || null,
+          isAuthenticated: !!token, // 只要有 token 就认为是已认证
+        });
+        // 验证设置是否成功
+        setTimeout(() => {
+          const currentState = useAuthStore.getState();
+          console.log('✅ login 函数执行后 Store 状态:', {
+            token: currentState.token ? '存在' : '缺失',
+            refreshToken: currentState.refreshToken ? '存在' : '缺失',
+            user: currentState.user,
+            isAuthenticated: currentState.isAuthenticated
+          });
+        }, 0);
+      },
       logout: () =>
         set({
           token: null,
@@ -47,10 +59,20 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
         }),
       updateUser: (user) => set({ user }),
-      updateToken: (token) => set({ token }),
+      updateToken: (token) => {
+        console.log('🔄 updateToken 被调用', { token: token ? '存在' : '缺失' });
+        set({ token, isAuthenticated: !!token });
+      },
     }),
     {
       name: 'auth-storage',
+      // 确保所有字段都被持久化
+      partialize: (state) => ({
+        token: state.token,
+        refreshToken: state.refreshToken,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );

@@ -12,6 +12,7 @@ export { ProtectedRoute } from './ProtectedRoute';
 export { ErrorBoundary } from './ErrorBoundary';
 export { Loading, TableSkeleton, CardSkeleton } from './Loading';
 export { VirtualList } from './VirtualList';
+export { ChangePasswordDialog } from './ChangePasswordDialog';
 export type { LoadingProps, LoadingType } from './Loading';
 export type { VirtualListProps } from './VirtualList';
 

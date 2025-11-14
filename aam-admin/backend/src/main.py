@@ -15,6 +15,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.core.config import get_settings
+from src.core.logging_config import setup_file_logging
+
+# 配置文件日志记录（日志文件最大 2MB，最多保留 3 个备份）
+setup_file_logging()
 
 # 配置结构化日志
 structlog.configure(
@@ -133,7 +137,18 @@ async def root() -> dict[str, str]:
 
 
 # 注册路由
-from src.api.routers import auth, dashboard, llm_provider, logs, service, security, version, deployment, audit, settings
+from src.api.routers import (
+    auth,
+    dashboard,
+    llm_provider,
+    logs,
+    service,
+    security,
+    version,
+    deployment,
+    audit,
+    settings as settings_router,
+)
 from src.api.websocket import logs as ws_logs
 
 app.include_router(auth.router, prefix=settings.api.api_prefix)
@@ -145,7 +160,7 @@ app.include_router(security.router, prefix=settings.api.api_prefix)
 app.include_router(version.router, prefix=settings.api.api_prefix + "/admin")
 app.include_router(deployment.router, prefix=settings.api.api_prefix + "/admin")
 app.include_router(audit.router, prefix=settings.api.api_prefix + "/admin")
-app.include_router(settings.router, prefix=settings.api.api_prefix + "/admin")
+app.include_router(settings_router.router, prefix=settings.api.api_prefix + "/admin")
 app.include_router(ws_logs.router)
 
 
