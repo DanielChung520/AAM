@@ -1,0 +1,45 @@
+# @purpose: AAM Admin Backend 核心依赖
+# @author: Daniel Chung
+# @createdAt: 2025-01-14
+# @lastModified: 2025-01-14
+
+# Web 框架
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+pydantic[email]>=2.5.0
+pydantic-settings>=2.1.0
+
+# 数据库
+psycopg2-binary>=2.9.9
+sqlalchemy[asyncio]>=2.0.23
+alembic>=1.12.1
+
+# Docker 集成
+docker>=6.1.0
+
+# JWT 和认证
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+PyJWT>=2.8.0
+cryptography>=41.0.0
+
+# HTTP 客户端
+httpx>=0.25.1
+
+# 日志
+structlog>=23.2.0
+
+# 工具库
+python-multipart>=0.0.6
+psutil>=5.9.0
+
+# WebSocket 支持
+websockets>=12.0
+
+# 开发工具（可选）
+black>=23.12.0
+isort>=5.13.0
+mypy>=1.8.0
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+

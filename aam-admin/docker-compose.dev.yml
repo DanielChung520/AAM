@@ -1,0 +1,70 @@
+# @purpose: AAM Admin 管理系统开发环境 Docker Compose 配置
+# @author: Daniel Chung
+# @createdAt: 2025-01-14
+# @lastModified: 2025-01-14
+# @usage: docker-compose -f docker-compose.dev.yml up -d
+
+services:
+  # 管理数据库 PostgreSQL
+  admin-db:
+    image: postgres:15-alpine
+    container_name: admin-db-dev
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=aam_admin
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - admin_db_data_dev:/var/lib/postgresql/data
+    networks:
+      - admin-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d aam_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # 管理后端服务
+  admin-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: admin-backend-dev
+    ports:
+      - "8003:8003"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - DB_DATABASE_URL=postgresql://admin:admin@admin-db:5432/aam_admin
+      - API_HOST=0.0.0.0
+      - API_PORT=8003
+      - AUTH_SECRET_KEY=dev-secret-key-change-in-production
+      - AUTH_AAM_SERVICE_URL=http://host.docker.internal:8000
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+    depends_on:
+      admin-db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - admin-network-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8003 --reload
+    restart: unless-stopped
+
+volumes:
+  admin_db_data_dev:
+
+networks:
+  admin-network-dev:
+    driver: bridge
+

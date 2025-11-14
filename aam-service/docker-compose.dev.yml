@@ -1,0 +1,142 @@
+# @purpose: AAM 服務開發環境 Docker Compose 配置
+# @author: DanielChung and AI
+# @createdAt: 2025-11-12
+# @lastModified: 2025-11-12
+# @usage: docker-compose -f docker-compose.dev.yml up -d
+
+services:
+  # AAM Service - 主服務（開發環境）
+  aam-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    container_name: aam-service-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=aam_personas
+      - POSTGRES_USER=aam_user
+      - POSTGRES_PASSWORD=aam_password
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASSWORD=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./model_cache:/app/model_cache
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - aam-network-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+
+  # ChromaDB - 向量數據庫
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb-dev
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data_dev:/chroma/chroma
+    networks:
+      - aam-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8000' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # PostgreSQL - 用戶畫像數據庫
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-dev
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=aam_personas
+      - POSTGRES_USER=aam_user
+      - POSTGRES_PASSWORD=aam_password
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - aam-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aam_user -d aam_personas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # RabbitMQ - 消息隊列
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    volumes:
+      - rabbitmq_data_dev:/var/lib/rabbitmq
+    networks:
+      - aam-network-dev
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis - 緩存（可選）
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - aam-network-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  chromadb_data_dev:
+  postgres_data_dev:
+  rabbitmq_data_dev:
+  redis_data_dev:
+
+networks:
+  aam-network-dev:
+    driver: bridge
+

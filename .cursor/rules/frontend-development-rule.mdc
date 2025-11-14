@@ -1,0 +1,775 @@
+---
+description: AAM 管理系統前端開發規範，包含 React + TypeScript + Joy UI 技術棧規範、目錄結構、組件開發、樣式主題、API 調用、狀態管理等強制性開發規則
+alwaysApply: true
+---
+
+# AAM 管理系統前端開發規範 (Frontend Development Guide)
+
+## 🚨 強制執行聲明
+
+**AI 開發助手，在開發 AAM 管理系統前端時，你必須嚴格遵守以下所有規則。違反任何規則都將導致代碼審查失敗。**
+
+---
+
+## 1. 核心原則 (Core Principles)
+
+### 1.1 技術棧強制規範 ⚠️ 強制執行
+
+**必須使用的技術棧：**
+- **框架**: React 18+ (函數式組件 + Hooks)
+- **語言**: TypeScript 5+ (嚴格模式)
+- **UI 庫**: React Joy UI (主要 UI 組件庫)
+- **狀態管理**: Zustand (輕量級狀態管理)
+- **路由**: React Router 6.x
+- **HTTP 客戶端**: Axios
+- **圖表**: ECharts (通過 echarts-for-react)
+- **構建工具**: Vite
+- **代碼規範**: ESLint + Prettier
+
+**禁止使用的技術：**
+- ❌ 類組件 (Class Components)
+- ❌ JavaScript (必須使用 TypeScript)
+- ❌ 其他 UI 庫 (除非 Joy UI 無法滿足需求，需先確認)
+- ❌ Redux (除非 Zustand 無法滿足複雜狀態需求)
+
+### 1.2 深色模式對比度強制規範 ⚠️ 最高優先級
+
+**這是最重要的規則，違反此規則的代碼將被立即拒絕。**
+
+在編寫任何 UI 組件時，你必須：
+
+1. **強制使用 Joy UI 主題系統**
+   - 使用 `useColorScheme()` Hook 獲取當前主題模式
+   - 使用主題變量而非硬編碼顏色值
+   - 確保所有文字在深色模式下清晰可讀
+
+2. **強制測試雙模式**
+   - 所有組件必須在淺色和深色模式下測試
+   - 所有 hover 效果在兩種模式下都有足夠對比度
+   - 所有狀態指示器在深色模式下可見
+
+3. **強制實現主題切換**
+   - 提供主題切換功能（通常在頂部導航欄）
+   - 主題偏好應持久化到 localStorage
+
+**檢查清單（必須完成）：**
+- [ ] 所有文字在深色模式下清晰可讀（對比度 ≥ 4.5:1）
+- [ ] 所有 hover 效果在兩種模式下都有足夠對比度
+- [ ] 所有狀態指示器（成功/錯誤/警告）在深色模式下可見
+- [ ] 所有圖標在深色模式下清晰可見
+- [ ] 使用 Joy UI 主題變量而非硬編碼顏色值
+- [ ] 主題切換功能正常工作
+
+### 1.3 文件位置強制規範 ⚠️ 強制執行
+
+**在創建任何新文件前，你必須：**
+1. **強制查閱**專案目錄結構
+2. **強制確認**文件放置位置
+3. **強制禁止**隨意創建新目錄
+4. **強制禁止**將文件放在錯誤位置
+
+**文件位置強制指引：**
+- **組件文件**: `frontend/src/components/` 對應子目錄
+- **頁面文件**: `frontend/src/pages/` 對應子目錄
+- **API 服務**: `frontend/src/services/api/`
+- **狀態管理**: `frontend/src/stores/`
+- **類型定義**: `frontend/src/types/`
+- **工具函數**: `frontend/src/utils/`
+- **Hooks**: `frontend/src/hooks/`
+- **樣式文件**: `frontend/src/styles/`
+- **測試文件**: `frontend/src/__tests__/` 或 `frontend/tests/`
+
+**違規後果：**
+- 文件位置錯誤的代碼將被拒絕
+- 必須重新創建文件在正確位置
+- 不得移動現有文件到錯誤位置
+
+---
+
+## 2. 專案目錄結構 (Project Directory Structure) ⚠️ 強制遵守
+
+### 2.1 前端目錄結構規範
+
+```
+aam-admin/
+└── frontend/
+    ├── public/                  # 靜態資源
+    │   ├── favicon.ico
+    │   └── ...
+    ├── src/
+    │   ├── components/         # 可複用 UI 組件
+    │   │   ├── common/         # 通用組件（Button, Input, Card 等）
+    │   │   ├── layout/         # 佈局組件（Header, Sidebar, MainLayout 等）
+    │   │   ├── charts/         # 圖表組件
+    │   │   ├── forms/          # 表單組件
+    │   │   └── tables/         # 表格組件
+    │   ├── pages/              # 頁面組件
+    │   │   ├── Dashboard/      # 儀表盤
+    │   │   ├── LLMProvider/    # LLM Provider 管理
+    │   │   ├── ServiceMonitor/ # 服務監管
+    │   │   ├── Deployment/     # 版本與部署
+    │   │   ├── Logs/           # 日誌管理
+    │   │   ├── Security/       # 安全管理
+    │   │   └── Settings/       # 系統設置
+    │   ├── services/           # 業務服務層
+    │   │   ├── api/            # API 調用封裝
+    │   │   │   ├── auth.ts     # 認證 API
+    │   │   │   ├── llm.ts      # LLM Provider API
+    │   │   │   ├── service.ts  # 服務管理 API
+    │   │   │   ├── deployment.ts # 部署 API
+    │   │   │   ├── logs.ts     # 日誌 API
+    │   │   │   └── security.ts # 安全 API
+    │   │   ├── websocket.ts    # WebSocket 服務
+    │   │   └── index.ts        # 服務導出
+    │   ├── stores/             # 狀態管理（Zustand）
+    │   │   ├── authStore.ts    # 認證狀態
+    │   │   ├── themeStore.ts   # 主題狀態
+    │   │   ├── serviceStore.ts # 服務狀態
+    │   │   └── index.ts
+    │   ├── hooks/              # 自定義 Hooks
+    │   │   ├── useAuth.ts      # 認證 Hook
+    │   │   ├── useWebSocket.ts # WebSocket Hook
+    │   │   ├── useApi.ts       # API 調用 Hook
+    │   │   └── ...
+    │   ├── types/              # TypeScript 類型定義
+    │   │   ├── api.ts          # API 類型
+    │   │   ├── models.ts       # 數據模型類型
+    │   │   └── index.ts
+    │   ├── utils/              # 工具函數
+    │   │   ├── format.ts       # 格式化工具
+    │   │   ├── validation.ts  # 驗證工具
+    │   │   ├── constants.ts    # 常量定義
+    │   │   └── index.ts
+    │   ├── styles/             # 樣式文件
+    │   │   ├── theme.ts        # Joy UI 主題配置
+    │   │   ├── global.css      # 全局樣式
+    │   │   └── variables.css   # CSS 變量
+    │   ├── config/             # 配置文件
+    │   │   ├── api.ts          # API 配置
+    │   │   └── constants.ts    # 應用常量
+    │   ├── App.tsx             # 根組件
+    │   ├── main.tsx            # 應用入口
+    │   └── vite-env.d.ts      # Vite 類型定義
+    ├── tests/                  # 測試文件
+    │   ├── unit/               # 單元測試
+    │   ├── integration/        # 集成測試
+    │   └── e2e/                # 端到端測試
+    ├── .eslintrc.js           # ESLint 配置
+    ├── .prettierrc            # Prettier 配置
+    ├── index.html             # HTML 模板
+    ├── package.json           # 依賴配置
+    ├── tsconfig.json          # TypeScript 配置
+    ├── vite.config.ts         # Vite 配置
+    └── README.md              # 前端文檔
+```
+
+### 2.2 目錄命名規範
+
+- **使用小寫字母和連字符**: `service-monitor/` 而非 `ServiceMonitor/`
+- **組件目錄使用 PascalCase**: `components/DataTable/` 而非 `components/data-table/`
+- **文件命名使用 camelCase**: `useAuth.ts` 而非 `use-auth.ts`
+- **組件文件使用 PascalCase**: `DataTable.tsx` 而非 `data-table.tsx`
+
+---
+
+## 3. 組件開發規範 (Component Development Rules)
+
+### 3.1 組件結構規範
+
+**所有組件必須遵循以下結構：**
+
+```typescript
+/**
+ * @purpose: 組件用途說明
+ * @author: 作者名稱
+ * @createdAt: 創建日期
+ * @lastModified: 最後修改日期
+ */
+import React from 'react';
+import { Box, Typography } from '@mui/joy';
+import { useColorScheme } from '@mui/joy/styles';
+
+// 類型定義
+interface ComponentProps {
+  title: string;
+  onAction?: () => void;
+}
+
+// 組件實現
+export const Component: React.FC<ComponentProps> = ({ title, onAction }) => {
+  const { mode } = useColorScheme();
+
+  return (
+    <Box>
+      <Typography>{title}</Typography>
+      {/* 組件內容 */}
+    </Box>
+  );
+};
+
+export default Component;
+```
+
+### 3.2 組件開發強制要求
+
+1. **必須使用函數式組件**
+   - 禁止使用類組件
+   - 使用 React Hooks 管理狀態和副作用
+
+2. **必須使用 TypeScript**
+   - 所有 props 必須定義類型
+   - 使用 `interface` 定義組件 props
+   - 禁止使用 `any` 類型（除非必要且需註釋說明）
+
+3. **必須支持深色模式**
+   - 使用 `useColorScheme()` Hook
+   - 使用 Joy UI 主題變量
+   - 測試兩種模式下的顯示效果
+
+4. **必須添加文件頭註釋**
+   - 包含 `@purpose`, `@author`, `@createdAt`, `@lastModified`
+
+5. **必須導出組件**
+   - 使用命名導出：`export const Component`
+   - 同時提供默認導出：`export default Component`
+
+### 3.3 組件分類規範
+
+- **通用組件** (`components/common/`): 可跨模塊使用的基礎組件
+- **佈局組件** (`components/layout/`): 頁面佈局相關組件
+- **業務組件** (`components/[module]/`): 特定業務模塊的組件
+- **頁面組件** (`pages/[Module]/`): 完整的頁面組件
+
+---
+
+## 4. 樣式與主題規範 (Styling & Theme Rules)
+
+### 4.1 Joy UI 主題配置
+
+**必須使用 Joy UI 主題系統，禁止直接使用 CSS 類名或內聯樣式（除非必要）。**
+
+```typescript
+// src/styles/theme.ts
+import { extendTheme } from '@mui/joy/styles';
+
+export const theme = extendTheme({
+  colorSchemes: {
+    light: {
+      palette: {
+        primary: {
+          50: '#e3f2fd',
+          100: '#bbdefb',
+          // ... 完整的調色板
+        },
+      },
+    },
+    dark: {
+      palette: {
+        primary: {
+          50: '#0d47a1',
+          100: '#1565c0',
+          // ... 完整的調色板
+        },
+      },
+    },
+  },
+});
+```
+
+### 4.2 顏色使用規範
+
+1. **禁止硬編碼顏色值**
+   ```typescript
+   // ❌ 錯誤
+   <Box sx={{ color: '#1976d2' }}>Text</Box>
+   
+   // ✅ 正確
+   <Box sx={{ color: 'primary.500' }}>Text</Box>
+   ```
+
+2. **使用主題變量**
+   ```typescript
+   // ✅ 正確
+   <Box sx={{ 
+     bgcolor: 'background.surface',
+     color: 'text.primary',
+     borderColor: 'divider'
+   }}>
+     Content
+   </Box>
+   ```
+
+3. **響應主題模式**
+   ```typescript
+   const { mode } = useColorScheme();
+   const isDark = mode === 'dark';
+   ```
+
+### 4.3 響應式設計規範
+
+**必須使用 Joy UI 的響應式系統：**
+
+```typescript
+<Box
+  sx={{
+    width: { xs: '100%', sm: '50%', md: '33%', lg: '25%' },
+    padding: { xs: 1, sm: 2, md: 3 },
+  }}
+>
+  Content
+</Box>
+```
+
+**斷點定義：**
+- `xs`: 0px (手機)
+- `sm`: 600px (平板)
+- `md`: 900px (小桌面)
+- `lg`: 1200px (桌面)
+- `xl`: 1536px (大桌面)
+
+---
+
+## 5. API 調用規範 (API Call Rules)
+
+### 5.1 API 服務封裝
+
+**所有 API 調用必須通過 `services/api/` 目錄下的服務封裝：**
+
+```typescript
+// src/services/api/llm.ts
+import axios from 'axios';
+import { API_BASE_URL } from '@/config/api';
+import type { LLMProvider, LLMProviderList } from '@/types/api';
+
+const apiClient = axios.create({
+  baseURL: `${API_BASE_URL}/api/v1`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 請求攔截器（添加認證 token）
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 響應攔截器（錯誤處理）
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // 處理未授權錯誤
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const llmApi = {
+  // 獲取 LLM Provider 列表
+  getProviders: async (): Promise<LLMProviderList> => {
+    const response = await apiClient.get<LLMProviderList>('/llm/providers');
+    return response.data;
+  },
+
+  // 創建 LLM Provider
+  createProvider: async (provider: Partial<LLMProvider>): Promise<LLMProvider> => {
+    const response = await apiClient.post<LLMProvider>('/llm/providers', provider);
+    return response.data;
+  },
+
+  // 更新 LLM Provider
+  updateProvider: async (id: string, provider: Partial<LLMProvider>): Promise<LLMProvider> => {
+    const response = await apiClient.patch<LLMProvider>(`/llm/providers/${id}`, provider);
+    return response.data;
+  },
+
+  // 刪除 LLM Provider
+  deleteProvider: async (id: string): Promise<void> => {
+    await apiClient.delete(`/llm/providers/${id}`);
+  },
+};
+```
+
+### 5.2 自定義 Hook 封裝
+
+**使用自定義 Hook 封裝 API 調用邏輯：**
+
+```typescript
+// src/hooks/useLLMProviders.ts
+import { useState, useEffect } from 'react';
+import { llmApi } from '@/services/api/llm';
+import type { LLMProvider } from '@/types/api';
+
+export const useLLMProviders = () => {
+  const [providers, setProviders] = useState<LLMProvider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        setLoading(true);
+        const data = await llmApi.getProviders();
+        setProviders(data.items);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProviders();
+  }, []);
+
+  const createProvider = async (provider: Partial<LLMProvider>) => {
+    try {
+      const newProvider = await llmApi.createProvider(provider);
+      setProviders((prev) => [...prev, newProvider]);
+      return newProvider;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    }
+  };
+
+  return {
+    providers,
+    loading,
+    error,
+    createProvider,
+  };
+};
+```
+
+### 5.3 錯誤處理規範
+
+1. **必須處理所有 API 錯誤**
+2. **使用統一的錯誤提示組件**
+3. **記錄錯誤到日誌系統（可選）**
+
+---
+
+## 6. 狀態管理規範 (State Management Rules)
+
+### 6.1 Zustand Store 規範
+
+**使用 Zustand 進行全局狀態管理：**
+
+```typescript
+// src/stores/authStore.ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface AuthState {
+  token: string | null;
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (token: string, user: User) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      isAuthenticated: false,
+      login: (token, user) => set({ token, user, isAuthenticated: true }),
+      logout: () => set({ token: null, user: null, isAuthenticated: false }),
+    }),
+    {
+      name: 'auth-storage', // localStorage key
+    }
+  )
+);
+```
+
+### 6.2 狀態管理原則
+
+1. **本地狀態優先**: 使用 `useState` 管理組件內部狀態
+2. **共享狀態使用 Store**: 跨組件共享的狀態使用 Zustand
+3. **服務器狀態使用 Hook**: API 數據使用自定義 Hook 管理
+4. **避免過度使用全局狀態**: 只在必要時使用全局狀態
+
+---
+
+## 7. 路由規範 (Routing Rules)
+
+### 7.1 路由配置
+
+```typescript
+// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import { Dashboard } from '@/pages/Dashboard';
+import { LLMProvider } from '@/pages/LLMProvider';
+// ... 其他頁面導入
+
+export const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="llm-provider" element={<LLMProvider />} />
+          {/* ... 其他路由 */}
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+};
+```
+
+### 7.2 路由命名規範
+
+- 使用 kebab-case: `/llm-provider` 而非 `/llmProvider`
+- 路由路徑與頁面目錄結構對應
+- 使用嵌套路由組織相關頁面
+
+---
+
+## 8. 類型定義規範 (TypeScript Type Rules)
+
+### 8.1 類型定義要求
+
+1. **所有 API 響應必須定義類型**
+2. **所有組件 Props 必須定義類型**
+3. **禁止使用 `any` 類型（除非必要且需註釋）**
+4. **使用 `interface` 定義對象類型**
+5. **使用 `type` 定義聯合類型或別名**
+
+```typescript
+// src/types/api.ts
+export interface LLMProvider {
+  id: string;
+  name: string;
+  type: 'qwen' | 'gemini' | 'ollama';
+  apiKey?: string;
+  baseUrl: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LLMProviderList {
+  items: LLMProvider[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export type LLMProviderType = 'qwen' | 'gemini' | 'ollama';
+```
+
+---
+
+## 9. 測試規範 (Testing Rules)
+
+### 9.1 測試要求
+
+1. **組件必須有單元測試**
+2. **關鍵業務邏輯必須有測試覆蓋**
+3. **使用 React Testing Library 進行組件測試**
+4. **使用 Vitest 作為測試框架**
+
+### 9.2 測試文件規範
+
+```typescript
+// src/components/common/Button.test.tsx
+import { render, screen } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('應該正確渲染按鈕文字', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('應該在深色模式下正確顯示', () => {
+    // 測試深色模式
+  });
+});
+```
+
+---
+
+## 10. 代碼質量規範 (Code Quality Rules)
+
+### 10.1 ESLint 配置
+
+**必須使用 ESLint 進行代碼檢查：**
+
+```javascript
+// .eslintrc.js
+module.exports = {
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+  ],
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'react/react-in-jsx-scope': 'off',
+    'react/prop-types': 'off',
+  },
+};
+```
+
+### 10.2 Prettier 配置
+
+**必須使用 Prettier 進行代碼格式化：**
+
+```json
+// .prettierrc
+{
+  "semi": true,
+  "trailingComma": "es5",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2
+}
+```
+
+### 10.3 代碼提交規範
+
+**提交信息必須遵循 Conventional Commits：**
+
+```
+feat: 添加 LLM Provider 管理頁面
+fix: 修復深色模式下文字對比度問題
+docs: 更新 API 文檔
+style: 格式化代碼
+refactor: 重構狀態管理邏輯
+test: 添加組件單元測試
+chore: 更新依賴版本
+```
+
+---
+
+## 11. 性能優化規範 (Performance Rules)
+
+### 11.1 組件優化
+
+1. **使用 `React.memo` 優化組件渲染**
+2. **使用 `useMemo` 和 `useCallback` 優化計算和函數**
+3. **避免不必要的重新渲染**
+
+```typescript
+// ✅ 正確
+const MemoizedComponent = React.memo(({ data }: Props) => {
+  const processedData = useMemo(() => processData(data), [data]);
+  const handleClick = useCallback(() => {
+    // 處理邏輯
+  }, []);
+  
+  return <div>{processedData}</div>;
+});
+```
+
+### 11.2 代碼分割
+
+**使用 React.lazy 進行路由級代碼分割：**
+
+```typescript
+const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
+const LLMProvider = React.lazy(() => import('@/pages/LLMProvider'));
+
+<Suspense fallback={<Loading />}>
+  <Routes>
+    <Route path="dashboard" element={<Dashboard />} />
+    <Route path="llm-provider" element={<LLMProvider />} />
+  </Routes>
+</Suspense>
+```
+
+---
+
+## 12. 安全規範 (Security Rules)
+
+### 12.1 認證與授權
+
+1. **所有 API 調用必須包含認證 token**
+2. **使用 ProtectedRoute 保護需要認證的路由**
+3. **敏感信息不得存儲在 localStorage（除非加密）**
+
+### 12.2 輸入驗證
+
+1. **所有用戶輸入必須驗證**
+2. **使用表單驗證庫（如 React Hook Form + Zod）**
+3. **防止 XSS 攻擊（React 默認處理）**
+
+---
+
+## 13. 文檔規範 (Documentation Rules)
+
+### 13.1 代碼註釋
+
+1. **所有組件必須有文件頭註釋**
+2. **複雜邏輯必須有行內註釋**
+3. **公共 API 必須有 JSDoc 註釋**
+
+### 13.2 README 文檔
+
+**每個模塊目錄應包含 README.md：**
+- 模塊用途說明
+- 使用示例
+- API 文檔
+
+---
+
+## 14. 檢查清單 (Checklist)
+
+在提交代碼前，必須完成以下檢查：
+
+### 代碼質量
+- [ ] 通過 ESLint 檢查
+- [ ] 通過 Prettier 格式化
+- [ ] 通過 TypeScript 類型檢查
+- [ ] 所有測試通過
+
+### 功能完整性
+- [ ] 組件在淺色模式下正常顯示
+- [ ] 組件在深色模式下正常顯示
+- [ ] 所有交互功能正常工作
+- [ ] 響應式設計在不同屏幕尺寸下正常
+
+### 代碼規範
+- [ ] 文件位置正確
+- [ ] 文件命名符合規範
+- [ ] 組件結構符合規範
+- [ ] 類型定義完整
+- [ ] 錯誤處理完善
+
+### 文檔
+- [ ] 文件頭註釋完整
+- [ ] 複雜邏輯有註釋說明
+- [ ] README 文檔已更新（如需要）
+
+---
+
+## 15. 違規處理
+
+**違反任何規則的代碼將：**
+1. 被拒絕合併
+2. 要求重新開發
+3. 必須通過所有檢查清單項目
+
+---
+
+**最後更新：2025-11-13**

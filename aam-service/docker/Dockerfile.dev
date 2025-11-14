@@ -1,0 +1,71 @@
+# @purpose: AAM 服務的開發環境 Dockerfile，使用多階段構建優化體積
+# @author: DanielChung and AI
+# @createdAt: 2025-11-12
+# @lastModified: 2025-11-12
+# @environment: Development
+
+# 第一階段：構建階段
+FROM python:3.11-slim AS builder
+
+# 設置工作目錄
+WORKDIR /build
+
+# 安裝構建依賴
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 複製依賴文件
+COPY requirements.txt .
+
+# 安裝 Python 依賴到臨時目錄
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# 第二階段：運行階段
+FROM python:3.11-slim
+
+# 設置工作目錄
+WORKDIR /app
+
+# 安裝運行時依賴
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 創建非 root 用戶
+RUN useradd -m -u 1000 aamuser
+
+# 從構建階段複製已安裝的 Python 包到用戶目錄
+COPY --from=builder /root/.local /home/aamuser/.local
+
+# 設置權限
+RUN chown -R aamuser:aamuser /home/aamuser/.local && \
+    chown -R aamuser:aamuser /app
+
+# 確保腳本在 PATH 中
+ENV PATH=/home/aamuser/.local/bin:$PATH
+
+# 複製應用代碼
+COPY --chown=aamuser:aamuser src/ ./src/
+COPY --chown=aamuser:aamuser . .
+
+# 切換到非 root 用戶
+USER aamuser
+
+# 設置環境變量
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+# 健康檢查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# 暴露端口
+EXPOSE 8000
+
+# 啟動命令
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+

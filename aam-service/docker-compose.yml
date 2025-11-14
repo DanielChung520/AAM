@@ -1,0 +1,128 @@
+services:
+  # AAM Service - 主服務
+  aam-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    container_name: aam-service
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=aam_personas
+      - POSTGRES_USER=aam_user
+      - POSTGRES_PASSWORD=aam_password
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASSWORD=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./src:/app/src
+      - ./model_cache:/app/model_cache
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - aam-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ChromaDB - 向量數據庫
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    networks:
+      - aam-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8000' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # PostgreSQL - 用戶畫像數據庫
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=aam_personas
+      - POSTGRES_USER=aam_user
+      - POSTGRES_PASSWORD=aam_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - aam-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aam_user -d aam_personas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ - 消息隊列
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - aam-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis - 緩存（可選）
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - aam-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  chromadb_data:
+  postgres_data:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  aam-network:
+    driver: bridge
+

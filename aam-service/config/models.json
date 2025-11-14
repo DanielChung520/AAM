@@ -1,0 +1,78 @@
+{
+  "gemini": {
+    "models": [
+      {
+        "model_name": "gemini-2.5-flash",
+        "display_name": "Gemini 2.5 Flash",
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "enabled": true,
+        "priority": 1,
+        "description": "快速响应的 Gemini 模型，适合一般任务"
+      },
+      {
+        "model_name": "gemini-2.5-pro",
+        "display_name": "Gemini 2.5 Pro",
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "enabled": false,
+        "priority": 2,
+        "description": "高性能 Gemini 模型，适合复杂任务"
+      },
+      {
+        "model_name": "gemini-pro-latest",
+        "display_name": "Gemini Pro Latest",
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "enabled": false,
+        "priority": 3,
+        "description": "Gemini Pro 最新版本"
+      }
+    ]
+  },
+  "qwen": {
+    "models": [
+      {
+        "model_name": "qwen-turbo",
+        "display_name": "Qwen Turbo",
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "enabled": true,
+        "priority": 1,
+        "description": "快速响应的 Qwen 模型"
+      },
+      {
+        "model_name": "qwen-plus",
+        "display_name": "Qwen Plus",
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "enabled": false,
+        "priority": 2,
+        "description": "高性能 Qwen 模型"
+      }
+    ]
+  },
+  "ollama": {
+    "models": [
+      {
+        "model_name": "deepseek-r1:8b",
+        "display_name": "DeepSeek R1 8B",
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "enabled": true,
+        "priority": 1,
+        "description": "DeepSeek R1 8B 模型"
+      },
+      {
+        "model_name": "llama3",
+        "display_name": "Llama 3",
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "enabled": false,
+        "priority": 2,
+        "description": "Meta Llama 3 模型"
+      }
+    ]
+  }
+}
+

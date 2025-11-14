@@ -1,0 +1,140 @@
+# @purpose: Git 忽略文件配置 - AAM 项目根目录
+# @author: DanielChung and AI
+# @createdAt: 2025-01-XX
+# @lastModified: 2025-01-XX
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.parcel-cache
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# 虛擬環境
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# 環境變量
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 測試
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+.nyc_output/
+coverage/
+*.lcov
+
+# 日誌
+*.log
+logs/
+*.log.*
+
+# 模型緩存
+model_cache/
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.h5
+*.ckpt
+
+# 數據庫
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# 臨時文件
+tmp/
+temp/
+*.tmp
+*.temp
+
+# 系統文件
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# 備份文件
+*.bak
+*.backup
+*.old
+
+# 本地配置
+local_settings.py
+local_config.py
+config.local.json
+
+# 編譯文件
+*.o
+*.a
+*.lib
+*.dll
+*.exe
+
+# 壓縮文件（可選，根據需要取消註釋）
+# *.zip
+# *.tar.gz
+# *.rar
+
